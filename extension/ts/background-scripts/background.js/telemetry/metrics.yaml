@@ -47,7 +47,7 @@ metadata:
       - glean-team@mozilla.com
     expires: never
 
-performace:
+performance:
   translation_time:
     type: event
     lifetime: ping

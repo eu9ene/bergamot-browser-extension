@@ -2,13 +2,13 @@ import Glean from "@mozilla/glean/webext";
 // @ts-ignore
 import { custom } from "./generated/pings";
 // @ts-ignore
-import { to_lang, from_lang } from "./generated/metadata";
+import { toLang, fromLang } from "./generated/metadata";
 
 Glean.initialize("bergamot-extension", true, { debug: { logPings: true } });
 
 const _set_meta = (lang_from: string, lang_to: string) => {
-  to_lang.set(lang_to);
-  from_lang.set(lang_from);
+  toLang.set(lang_to);
+  fromLang.set(lang_from);
 };
 
 const _dynamic_call = (
@@ -42,7 +42,7 @@ export const timing = (
 ) => {
   _set_meta(lang_from, lang_to);
   // todo: switch to timespan metric type when it is supported
-  _dynamic_call(category, name, "record", { temespan: String(value) });
+  _dynamic_call(category, name, "record", { timespan: String(value) });
   custom.submit();
 };
 
