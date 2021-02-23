@@ -1,4 +1,4 @@
-import Glean from "@mozilla/glean/webext";
+import Glean from "@mozilla/glean/dist/webext";
 // @ts-ignore
 import { custom } from "./generated/pings";
 // @ts-ignore
