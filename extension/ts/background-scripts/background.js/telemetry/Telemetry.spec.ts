@@ -13,7 +13,7 @@ describe(testSuite, function() {
     const telemetry = new Telemetry();
     const results = telemetry.increment(
       "test",
-      "test_counter",
+      "testCounter",
       "test_from_lang",
       "test_to_lang",
     );

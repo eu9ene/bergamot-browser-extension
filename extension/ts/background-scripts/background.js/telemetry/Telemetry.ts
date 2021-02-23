@@ -3,10 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Glean from "@mozilla/glean/dist/webext";
+import errors from "./generated/errors";
+import infobar from "./generated/infobar";
+import metadata from "./generated/metadata";
+import performance from "./generated/performance";
+import service from "./generated/service";
+import test from "./generated/test";
 // @ts-ignore
 import { custom } from "./generated/pings";
 // @ts-ignore
 import { toLang, fromLang } from "./generated/metadata";
+
+const generatedGleanModules = {
+  errors,
+  infobar,
+  metadata,
+  performance,
+  service,
+  test,
+};
 
 type MetricsCategory =
   | "errors"
@@ -28,24 +43,27 @@ export class Telemetry {
     fromLang.set(lang_from);
   };
 
-  private _dynamic_call = (
+  private glean_call = (
     category: MetricsCategory,
     name: string,
     method: string,
     value: any = null,
   ) => {
-    import(`./generated/${category}`)
-      .then(module => {
-        if (value != null) {
-          module[name][method](value);
-        } else {
-          module[name][method]();
-        }
-      })
-      .catch(err => {
-        console.log(`Import error: ${err.message}`);
-        console.log(`Telemetry error: ${category}_${name} was not sent`);
-      });
+    const gleanModule = generatedGleanModules[category];
+    try {
+      if (value !== null) {
+        gleanModule[name][method](value);
+      } else {
+        gleanModule[name][method]();
+      }
+    } catch (err) {
+      console.error(
+        `Telemetry error: ${category}_${name} was not sent`,
+        { category, name, method, gleanModule },
+        err,
+      );
+      throw err;
+    }
   };
 
   public timing = (
@@ -57,7 +75,7 @@ export class Telemetry {
   ): GleanCustomPingSubmitResults => {
     this._set_meta(lang_from, lang_to);
     // todo: switch to timespan metric type when it is supported
-    this._dynamic_call(category, name, "record", { timespan: String(value) });
+    this.glean_call(category, name, "record", { timespan: String(value) });
     return custom.submit();
   };
 
@@ -68,7 +86,7 @@ export class Telemetry {
     lang_to: string,
   ): GleanCustomPingSubmitResults => {
     this._set_meta(lang_from, lang_to);
-    this._dynamic_call(category, name, "record");
+    this.glean_call(category, name, "record");
     return custom.submit();
   };
 
@@ -81,7 +99,7 @@ export class Telemetry {
   ): GleanCustomPingSubmitResults => {
     this._set_meta(lang_from, lang_to);
     // todo: switch to quantity metric type when it is supported
-    this._dynamic_call(category, name, "record", { quantity: String(value) });
+    this.glean_call(category, name, "record", { quantity: String(value) });
     return custom.submit();
   };
 
@@ -92,7 +110,7 @@ export class Telemetry {
     lang_to: string,
   ): GleanCustomPingSubmitResults => {
     this._set_meta(lang_from, lang_to);
-    this._dynamic_call(category, name, "add");
+    this.glean_call(category, name, "add");
     return custom.submit();
   };
 }
